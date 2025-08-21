@@ -1,0 +1,64 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Auth Test</title>
+</head>
+<body>
+    <h1>Testing Auth Functions</h1>
+    
+    <button onclick="testLogin()">Test Login Function</button>
+    <button onclick="testSignup()">Test Signup Function</button>
+    
+    <div id="results"></div>
+    
+    <script src="auth.js"></script>
+    <script>
+        function testLogin() {
+            console.log('Testing login...');
+            const results = document.getElementById('results');
+            
+            // Check if function exists
+            if (typeof handleLogin === 'function') {
+                results.innerHTML += '<p>✅ handleLogin function exists</p>';
+            } else {
+                results.innerHTML += '<p>❌ handleLogin function missing</p>';
+            }
+            
+            // Check if window.handleLogin exists
+            if (typeof window.handleLogin === 'function') {
+                results.innerHTML += '<p>✅ window.handleLogin exists</p>';
+            } else {
+                results.innerHTML += '<p>❌ window.handleLogin missing</p>';
+            }
+        }
+        
+        function testSignup() {
+            console.log('Testing signup...');
+            const results = document.getElementById('results');
+            
+            // Check if function exists
+            if (typeof handleSignup === 'function') {
+                results.innerHTML += '<p>✅ handleSignup function exists</p>';
+            } else {
+                results.innerHTML += '<p>❌ handleSignup function missing</p>';
+            }
+            
+            // Check if window.handleSignup exists
+            if (typeof window.handleSignup === 'function') {
+                results.innerHTML += '<p>✅ window.handleSignup exists</p>';
+            } else {
+                results.innerHTML += '<p>❌ window.handleSignup missing</p>';
+            }
+        }
+        
+        // Test on page load
+        window.addEventListener('load', function() {
+            console.log('Page loaded, running tests...');
+            testLogin();
+            testSignup();
+        });
+    </script>
+</body>
+</html>
+
+

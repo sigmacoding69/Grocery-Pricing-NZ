@@ -1,0 +1,178 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>GroceryCompare NZ - Dashboard</title>
+    <link rel="stylesheet" href="styles.css">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <script src="https://js.stripe.com/v3/"></script>
+</head>
+<body>
+    <header class="header">
+        <div class="container">
+            <div class="logo">
+                <i class="fas fa-shopping-cart"></i>
+                <h1>GroceryCompare NZ</h1>
+            </div>
+            <nav class="nav">
+                <a href="index.html" class="nav-link active">Dashboard</a>
+                <a href="prices.html" class="nav-link">Compare Prices</a>
+                <a href="ai-assistant.html" class="nav-link">AI Assistant</a>
+                <a href="about.html" class="nav-link">About</a>
+            </nav>
+            <div class="user-controls">
+                <div id="userSection" class="user-section hidden">
+                    <span id="userEmail" class="user-email"></span>
+                    <button id="subscriptionStatus" class="subscription-btn"></button>
+                    <button onclick="refreshSubscriptionStatus()" class="refresh-btn" title="Refresh subscription status">🔄</button>
+                    <button id="logoutBtn" class="logout-btn">Logout</button>
+                </div>
+                <div id="authSection" class="auth-section">
+                    <button id="loginBtn" class="auth-btn">Login</button>
+                    <button id="signupBtn" class="auth-btn primary">Sign Up</button>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <main class="main">
+        <!-- Hero Section -->
+        <section class="hero">
+            <div class="container">
+                <div class="hero-content">
+                    <h2>Your Grocery Price Dashboard</h2>
+                    <p>Real-time price tracking across New Zealand supermarkets. Save money with intelligent comparisons and AI-powered recommendations.</p>
+                    <div class="dashboard-stats">
+                        <div class="stat-card">
+                            <i class="fas fa-chart-line"></i>
+                            <h3 id="totalSavings">$0.00</h3>
+                            <p>Total Potential Savings</p>
+                        </div>
+                        <div class="stat-card">
+                            <i class="fas fa-store"></i>
+                            <h3 id="storeCount">8</h3>
+                            <p>Stores Monitored</p>
+                        </div>
+                        <div class="stat-card">
+                            <i class="fas fa-clock"></i>
+                            <h3 id="lastUpdate">Just now</h3>
+                            <p>Last Price Update</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Price Alerts Section -->
+        <section class="price-alerts">
+            <div class="container">
+                <h2>Today's Best Deals</h2>
+                <div class="alerts-grid" id="alertsGrid">
+                    <!-- Price alerts will be populated here -->
+                </div>
+            </div>
+        </section>
+
+        <!-- Quick Actions Section -->
+        <section class="quick-actions">
+            <div class="container">
+                <h2>Quick Actions</h2>
+                <div class="actions-grid">
+                    <a href="prices.html" class="action-card">
+                        <i class="fas fa-search"></i>
+                        <h3>Compare Prices</h3>
+                        <p>Find the best deals across all stores</p>
+                    </a>
+                    <a href="ai-assistant.html" class="action-card premium">
+                        <i class="fas fa-robot"></i>
+                        <h3>AI Assistant</h3>
+                        <p>Get personalized shopping recommendations</p>
+                        <span class="premium-badge">Premium</span>
+                    </a>
+                    <a href="#" onclick="openPriceAlerts()" class="action-card">
+                        <i class="fas fa-bell"></i>
+                        <h3>Price Alerts</h3>
+                        <p>Get notified when prices drop</p>
+                    </a>
+                    <a href="#" onclick="openShoppingList()" class="action-card">
+                        <i class="fas fa-list"></i>
+                        <h3>Shopping List</h3>
+                        <p>Track your grocery list with prices</p>
+                    </a>
+                </div>
+            </div>
+        </section>
+
+        <!-- Live Price Updates Section -->
+        <section class="live-updates">
+            <div class="container">
+                <h2>Live Price Updates</h2>
+                <div class="update-feed" id="updateFeed">
+                    <!-- Live updates will be populated here -->
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <!-- Authentication Modal -->
+    <div id="authModal" class="modal hidden">
+        <div class="modal-content">
+            <span class="close" onclick="closeAuthModal()">&times;</span>
+            <div id="loginForm" class="auth-form">
+                <h2>Login to GroceryCompare NZ</h2>
+                <form onsubmit="handleLogin(event)">
+                    <input type="email" id="loginEmail" placeholder="Email" required>
+                    <input type="password" id="loginPassword" placeholder="Password" required>
+                    <button type="submit" class="auth-submit">Login</button>
+                </form>
+                <p>Don't have an account? <a href="#" onclick="switchToSignup()">Sign up</a></p>
+            </div>
+            <div id="signupForm" class="auth-form hidden">
+                <h2>Sign Up for GroceryCompare NZ</h2>
+                <form onsubmit="handleSignup(event)">
+                    <input type="text" id="signupName" placeholder="Full Name" required>
+                    <input type="email" id="signupEmail" placeholder="Email" required>
+                    <input type="password" id="signupPassword" placeholder="Password" required>
+                    <button type="submit" class="auth-submit">Sign Up</button>
+                </form>
+                <p>Already have an account? <a href="#" onclick="switchToLogin()">Login</a></p>
+            </div>
+        </div>
+    </div>
+
+    <!-- Premium Upgrade Modal -->
+    <div id="premiumModal" class="modal hidden">
+        <div class="modal-content">
+            <span class="close" onclick="closePremiumModal()">&times;</span>
+            <div class="premium-content">
+                <h2>Upgrade to Premium</h2>
+                <div class="pricing-card">
+                    <h3>Premium Features</h3>
+                    <ul>
+                        <li><i class="fas fa-check"></i> Unlimited AI Assistant Access</li>
+                        <li><i class="fas fa-check"></i> Real-time Price Alerts</li>
+                        <li><i class="fas fa-check"></i> Advanced Shopping Lists</li>
+                        <li><i class="fas fa-check"></i> Historical Price Tracking</li>
+                        <li><i class="fas fa-check"></i> Premium Support</li>
+                    </ul>
+                    <div class="price">$9.99/month</div>
+                    <button id="subscribeBtn" class="premium-btn" onclick="handleSubscription()">
+                        Subscribe Now
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <footer class="footer">
+        <div class="container">
+            <p>&copy; 2024 GroceryCompare NZ. All rights reserved. | Helping Kiwis save money on groceries!</p>
+        </div>
+    </footer>
+
+    <script src="auth.js"></script>
+    <script src="dashboard.js"></script>
+    <script src="crawler.js"></script>
+</body>
+</html>
