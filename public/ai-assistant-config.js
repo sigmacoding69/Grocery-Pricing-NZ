@@ -3,7 +3,7 @@
 
 const AI_ASSISTANT_CONFIG = {
     // Your OpenAI API key (Do NOT store real secrets in client code)
-    apiKey: 'YOUR_OPENAI_API_KEY',
+    apiKey: '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',
     
     // Model configuration
     model: 'gpt-4o-mini',
