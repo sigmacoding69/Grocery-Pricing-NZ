@@ -266,7 +266,8 @@ class AIEggAssistant {
         const response = await fetch(config.apiUrl, {
             method: 'POST',
             headers: {
-                'Content-Type': 'application/json'
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${config.apiKey}`
             },
             body: JSON.stringify({
                 model: config.model,
@@ -277,24 +278,13 @@ class AIEggAssistant {
         });
         
         if (!response.ok) {
-            let errorCode = 'apiError';
-            try {
-                const errData = await response.json();
-                // Helpful console for debugging during setup
-                console.warn('AI proxy error:', { status: response.status, err: errData });
-                if (response.status === 401) {
-                    errorCode = 'invalidKey';
-                } else if (response.status === 429) {
-                    errorCode = 'rateLimit';
-                } else if (response.status === 500 && errData && typeof errData.error === 'string') {
-                    if (errData.error.includes('OPENAI_API_KEY')) {
-                        errorCode = 'invalidKey';
-                    }
-                }
-            } catch {
-                // ignore parse errors; keep generic mapping
+            if (response.status === 401) {
+                throw new Error('invalidKey');
+            } else if (response.status === 429) {
+                throw new Error('rateLimit');
+            } else {
+                throw new Error('apiError');
             }
-            throw new Error(errorCode);
         }
         
         const data = await response.json();

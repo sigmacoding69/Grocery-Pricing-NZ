@@ -3,12 +3,13 @@
 
 const AI_ASSISTANT_CONFIG = {
     // Your OpenAI API key (Do NOT store real secrets in client code)
+    apiKey: 'YOUR_OPENAI_API_KEY',
     
     // Model configuration
     model: 'gpt-4o-mini',
     
     // API endpoint
-    apiUrl: '/.netlify/functions/openai-chat',
+    apiUrl: 'https://api.openai.com/v1/chat/completions',
     
     // System prompt for egg-specific assistance
     systemPrompt: `You are an AI assistant specialized in providing information about eggs, egg prices, nutrition, cooking, and egg-related advice. You help users with:
@@ -37,6 +38,7 @@ Always provide helpful, accurate, and practical information about eggs. Keep res
 
 // Make AI config globally available
 window.AI_ASSISTANT_CONFIG = AI_ASSISTANT_CONFIG;
+
 
 
 
