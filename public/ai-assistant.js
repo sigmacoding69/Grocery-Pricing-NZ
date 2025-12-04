@@ -250,7 +250,7 @@ class AIEggAssistant {
         }
     }
 
-    // Call OpenAI API
+    // Call OpenAI API via Netlify serverless function
     async callOpenAI(message) {
         const config = window.AI_ASSISTANT_CONFIG;
         
@@ -263,11 +263,11 @@ class AIEggAssistant {
             ...this.chatHistory.slice(-10) // Keep last 10 messages for context
         ];
         
-        const response = await fetch(config.apiUrl, {
+        // Call Netlify serverless function instead of OpenAI directly
+        const response = await fetch('/.netlify/functions/openai-chat', {
             method: 'POST',
             headers: {
-                'Content-Type': 'application/json',
-                'Authorization': `Bearer ${config.apiKey}`
+                'Content-Type': 'application/json'
             },
             body: JSON.stringify({
                 model: config.model,
@@ -278,6 +278,7 @@ class AIEggAssistant {
         });
         
         if (!response.ok) {
+            const errorData = await response.json().catch(() => ({}));
             if (response.status === 401) {
                 throw new Error('invalidKey');
             } else if (response.status === 429) {

@@ -2,14 +2,11 @@
 // OpenAI integration for egg information and advice
 
 const AI_ASSISTANT_CONFIG = {
-    // Your OpenAI API key (Do NOT store real secrets in client code)
-    apiKey: 'YOUR_OPENAI_API_KEY',
-    
     // Model configuration
     model: 'gpt-4o-mini',
     
-    // API endpoint
-    apiUrl: 'https://api.openai.com/v1/chat/completions',
+    // Note: API calls are now handled securely via Netlify serverless function
+    // The API key is stored as an environment variable on Netlify (OPENAI_API_KEY)
     
     // System prompt for egg-specific assistance
     systemPrompt: `You are an AI assistant specialized in providing information about eggs, egg prices, nutrition, cooking, and egg-related advice. You help users with:
