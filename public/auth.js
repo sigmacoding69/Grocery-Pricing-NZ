@@ -280,7 +280,10 @@ function updateUIForLoggedInUser() {
         userEmail.textContent = currentUser.email;
         
         // Update subscription status
-        if (userSubscription && userSubscription.status === 'active') {
+        const hasPremium =
+            (userSubscription && userSubscription.status === 'active') ||
+            (currentUser && currentUser.isPremium === true);
+        if (hasPremium) {
             subscriptionStatus.textContent = 'Premium';
             subscriptionStatus.className = 'subscription-btn premium';
         } else {

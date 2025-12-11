@@ -396,6 +396,15 @@ class StripePaymentHandler {
             localStorage.setItem('grocerycompare_user', JSON.stringify(user));
             localStorage.setItem('grocerycompare_subscription', JSON.stringify(subscriptionData));
 
+        // Proactively refresh in-memory auth state and UI (no need to wait for reload)
+        if (window.refreshSubscriptionStatus) {
+            try {
+                window.refreshSubscriptionStatus();
+            } catch (e) {
+                console.warn('Failed to refresh subscription status immediately:', e);
+            }
+        }
+
             // Show success message
             this.showPaymentSuccess();
             
@@ -522,7 +531,7 @@ class StripePaymentHandler {
 
     // Get premium subscription info
     getSubscriptionInfo() {
-        const user = JSON.parse(localStorage.getItem('currentUser') || '{}');
+        const user = JSON.parse(localStorage.getItem('grocerycompare_user') || '{}');
         return {
             isPremium: user.isPremium || false,
             subscriptionStatus: user.subscriptionStatus || 'inactive',
