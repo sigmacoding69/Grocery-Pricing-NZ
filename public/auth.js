@@ -437,7 +437,26 @@ function handleSubscription() {
     // Use Stripe payment handler for premium subscription
     if (window.stripePaymentHandler) {
         showToast('Processing your premium subscription...', 'info');
-        window.stripePaymentHandler.createPremiumSubscription();
+        (async () => {
+            try {
+                const ensureFn = window.stripePaymentHandler.ensureInitialized?.bind(window.stripePaymentHandler);
+                const isReady = ensureFn ? await ensureFn() : !!window.stripePaymentHandler.stripe;
+                if (isReady) {
+                    window.stripePaymentHandler.createPremiumSubscription();
+                } else {
+                    showToast('Stripe not available. Using demo subscription instead...', 'info');
+                    setTimeout(() => {
+                        simulateSuccessfulSubscription();
+                    }, 500);
+                }
+            } catch (e) {
+                console.error('Error ensuring Stripe initialization:', e);
+                showToast('Stripe unavailable. Using demo subscription...', 'info');
+                setTimeout(() => {
+                    simulateSuccessfulSubscription();
+                }, 500);
+            }
+        })();
     } else {
         // Fallback to demo subscription if Stripe not available
         showToast('Demo: Simulating premium subscription activation...', 'info');

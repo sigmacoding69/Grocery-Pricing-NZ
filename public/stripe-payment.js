@@ -11,10 +11,24 @@
 class StripePaymentHandler {
     constructor() {
         this.stripe = null;
+        this._initializationAttempted = false;
         this.initializeStripe();
+        
+        // Retry initialization when DOM or window fully loads (in case Stripe script was late)
+        document.addEventListener('DOMContentLoaded', () => {
+            if (!this.stripe) {
+                this.initializeStripe();
+            }
+        });
+        window.addEventListener('load', () => {
+            if (!this.stripe) {
+                this.initializeStripe();
+            }
+        });
     }
 
     initializeStripe() {
+        this._initializationAttempted = true;
         if (typeof Stripe !== 'undefined' && window.STRIPE_CONFIG) {
             this.stripe = window.STRIPE_CONFIG.initialize();
             console.log('✅ Stripe initialized successfully');
@@ -23,11 +37,37 @@ class StripePaymentHandler {
         }
     }
 
+    async waitForStripe(timeoutMs = 5000) {
+        const start = Date.now();
+        while (Date.now() - start < timeoutMs) {
+            if (typeof Stripe !== 'undefined' && window.STRIPE_CONFIG) return true;
+            await new Promise(resolve => setTimeout(resolve, 100));
+        }
+        return false;
+    }
+
+    async ensureInitialized() {
+        if (this.stripe) return true;
+        
+        // If first attempt failed, wait for Stripe globals then retry
+        const ready = await this.waitForStripe(6000);
+        if (ready) {
+            this.initializeStripe();
+        }
+        return !!this.stripe;
+    }
+
     // Create a payment intent for premium subscription
     async createPremiumSubscription() {
         if (!this.stripe) {
-            console.error('Stripe not initialized');
-            return;
+            const ok = await this.ensureInitialized();
+            if (!ok) {
+                console.error('Stripe not initialized');
+                if (typeof showToast === 'function') {
+                    showToast('Stripe not loaded. Check network/ad blockers and try again.', 'error');
+                }
+                return;
+            }
         }
 
         try {
