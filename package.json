@@ -7,6 +7,9 @@
     "build": "astro build",
     "preview": "astro preview"
   },
+  "dependencies": {
+    "firebase-admin": "^12.7.0"
+  },
   "devDependencies": {
     "astro": "^4.10.0"
   }

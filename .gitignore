@@ -24,3 +24,8 @@ build/
 
 # Misc
 *.local
+
+# Firebase / service account secrets
+*firebase-adminsdk*.json
+*service-account*.json
+*serviceAccount*.json

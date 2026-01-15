@@ -4,13 +4,20 @@
 let groceryDataLoaded = false;
 
 document.addEventListener('DOMContentLoaded', function() {
-    if (window.location.pathname.includes('prices.html')) {
+    // Astro route is usually "/prices" (no .html). Keep backward compatibility too.
+    const path = window.location.pathname || '';
+    if (path.includes('/prices') || path.includes('prices.html')) {
         initializePricesPage();
     }
 });
 
 function initializePricesPage() {
     console.log('🚀 Initializing prices page...');
+
+    // Load and render raw Firestore docs (console-like format)
+    loadFirestorePrices().catch(err => {
+        console.error('❌ Failed to load Firestore prices:', err);
+    });
     
     // Load groceryData
     ensureGroceryDataLoaded();
@@ -501,6 +508,95 @@ function refreshPrices() {
     }, 1000);
 }
 
+async function loadFirestorePrices() {
+    const statusEl = document.getElementById('firestorePricesStatus');
+    const listEl = document.getElementById('firestorePricesList');
+    if (!statusEl || !listEl) return;
+
+    statusEl.textContent = 'Loading from Firestore…';
+    listEl.innerHTML = '';
+
+    const res = await fetch('/.netlify/functions/get-prices?limit=50', {
+        headers: { 'Accept': 'application/json' }
+    });
+
+    if (!res.ok) {
+        const text = await res.text();
+        throw new Error(`HTTP ${res.status}: ${text}`);
+    }
+
+    const data = await res.json();
+    const items = data.items || [];
+
+    statusEl.textContent = `Loaded ${items.length} docs from "${data.collection}" (ordered by ${data.orderBy} ${data.orderDir})`;
+
+    if (!items.length) {
+        listEl.innerHTML = '<div class="no-results"><h3>No Firestore price docs found.</h3><p>Check FIRESTORE_PRICES_COLLECTION and that the collection has documents.</p></div>';
+        return;
+    }
+
+    listEl.innerHTML = items.map(renderFirestoreDoc).join('');
+}
+
+function escapeHtml(s) {
+    return String(s)
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;')
+        .replace(/'/g, '&#039;');
+}
+
+function renderFirestoreDoc(doc) {
+    const fields = doc.fields || {};
+    const entries = Object.entries(fields);
+
+    const fieldsHtml = entries.map(([name, typed]) => {
+        const type = typed?.type || 'unknown';
+        const value = typed?.value;
+
+        let valueHtml = '';
+        if (type === 'string') {
+            valueHtml = `"${escapeHtml(value)}"`;
+        } else if (type === 'timestamp') {
+            valueHtml = escapeHtml(value);
+        } else if (type === 'map' || type === 'array') {
+            valueHtml = `<pre class="firestore-value-json">${escapeHtml(JSON.stringify(value, null, 2))}</pre>`;
+        } else if (value === null || typeof value === 'undefined') {
+            valueHtml = 'null';
+        } else {
+            valueHtml = escapeHtml(value);
+        }
+
+        return `
+            <div class="firestore-field">
+                <div class="firestore-field-name">${escapeHtml(name)}</div>
+                <div class="firestore-field-value">${valueHtml}</div>
+                <div class="firestore-field-type">(${escapeHtml(type)})</div>
+            </div>
+        `;
+    }).join('');
+
+    return `
+        <div class="firestore-doc">
+            <div class="firestore-doc-header">
+                <div class="firestore-doc-id">Doc: <code>${escapeHtml(doc.id)}</code></div>
+            </div>
+            <div class="firestore-fields">
+                ${fieldsHtml}
+            </div>
+        </div>
+    `;
+}
+
+function refreshFirestorePrices() {
+    loadFirestorePrices().catch(err => {
+        console.error('❌ Failed to refresh Firestore prices:', err);
+        const statusEl = document.getElementById('firestorePricesStatus');
+        if (statusEl) statusEl.textContent = 'Failed to load Firestore prices (see console)';
+    });
+}
+
 // Debug function to test data loading
 window.debugPrices = function() {
     console.log('🔍 Debug Prices Function');
@@ -517,6 +613,7 @@ window.debugPrices = function() {
 
 // Make functions globally accessible
 window.refreshPrices = refreshPrices;
+window.refreshFirestorePrices = refreshFirestorePrices;
 window.searchGroceries = searchGroceries;
 window.filterByCategory = filterByCategory;
 window.filterByStore = filterByStore;

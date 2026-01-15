@@ -52,6 +52,25 @@
             </div>
         </section>
 
+        <!-- Live Firestore Feed (raw docs, console-like format) -->
+        <section class="firestore-raw">
+            <div class="container">
+                <div class="comparison-header">
+                    <h2>Live Firestore Prices (Raw)</h2>
+                    <div class="last-updated">
+                        <i class="fas fa-database"></i>
+                        <span id="firestorePricesStatus">Loading from Firestore…</span>
+                        <button onclick="refreshFirestorePrices()" class="refresh-btn" style="margin-left: 10px;">
+                            <i class="fas fa-refresh"></i> Refresh
+                        </button>
+                    </div>
+                </div>
+                <div id="firestorePricesList" class="firestore-prices-list">
+                    <!-- Firestore docs will be populated here -->
+                </div>
+            </div>
+        </section>
+
         <!-- Price Comparison Section -->
         <section class="price-comparison">
             <div class="container">
